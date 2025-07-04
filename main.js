@@ -21,6 +21,8 @@ function generateRandomChannelName() {
     return sections.join('-');
 }
 app.get('/rtc-token', (req, res) => {
+    const expirationTimeInSeconds = 3600
+
     const appID = process.env.APP_ID;
     const appCertificate = process.env.APP_CERTIFICATE;
     const channelName = req.query.channel_name;
