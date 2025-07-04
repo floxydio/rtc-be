@@ -20,28 +20,44 @@ function generateRandomChannelName() {
 
     return sections.join('-');
 }
-app.get('/rtc-token', (req, res) => {
-    const expirationTimeInSeconds = 3600
 
+app.get('/rtc-token', (req, res) => {
     const appID = process.env.APP_ID;
-    const appCertificate = process.env.APP_CERTIFICATE;
-    const channelName = req.query.channel_name;
+    const appCertificate = process.env.APP_CERT;
+
+    let channelName = req.query.channel_name;
+    if (!channelName) {
+        channelName = generateRandomChannelName();
+    }
+
     const uid = parseInt(req.query.uid) || 0;
+    const role = RtcRole.PUBLISHER;
+
+    const expirationTimeInSeconds = 3600;
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
     const token = RtcTokenBuilder.buildTokenWithUid(
-        appID, appCertificate, channelName, uid,
-        RtcRole.PUBLISHER, expirationTimeInSeconds
+        appID,
+        appCertificate,
+        channelName,
+        uid,
+        role,
+        privilegeExpiredTs
     );
 
-    res.json({
+    res.status(200).json({
+        status: 200,
         error: false,
         data: {
             token,
             channel_name: channelName,
-            uid,
+            uid: uid
         },
+        message: "Token call generated!"
     });
 });
+
 
 
 app.listen(port, () => {
